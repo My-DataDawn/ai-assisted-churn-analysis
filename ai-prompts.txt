@@ -1,0 +1,61 @@
+PROJECT 3: AI-ASSISTED CHURN ANALYSIS
+Tool used: Claude (AI assistant)
+Dataset: Bank Customer Churn (Kaggle), 10,000 customers, loaded into SQL Server as dbo.Customers
+Method: I asked Claude questions about the data, then checked its answers with my own SQL queries.
+
+-----------------------------------------------------
+SECTION 1: DATA QUALITY CHECK
+-----------------------------------------------------
+My question to AI: Please look at my churn file and check the data quality.
+
+AI answer (summary):
+- 10,000 rows, 18 columns, no missing values, no duplicate rows or customer IDs.
+- Overall churn rate: 20.4% (2,038 customers left).
+- 3,617 customers have a zero balance.
+- The Complain column is almost identical to Exited, so it may leak the answer.
+
+-----------------------------------------------------
+SECTION 2: VERIFICATION OF AI FINDINGS WITH SQL
+-----------------------------------------------------
+Check 1 - Overall churn: AI said 20.4%. My SQL says 20.4%. Match: YES
+Check 2 - By country: AI said Germany 32.4%, Spain 16.7%, France 16.2%. My SQL says the same. Match: YES
+Check 3 - By number of products: AI said 27.7%, 7.6%, 82.7%, 100%. My SQL says the same. Match: YES
+Check 4 - By age group: AI said 7.5%, 12.1%, 34.0%, 56.2%, 24.8%. My SQL says the same. Match: YES
+Check 5 - Complain vs churn: AI said 99.5% of customers who complained left. My SQL says 2,034 of 2,044. Match: YES
+
+Problem I fixed along the way: my first SQL query failed with "Operand data type bit is invalid for sum operator" because the Exited column is stored as a bit. I fixed it with CAST(Exited AS INT).
+
+Note: possible data leakage in the Complain column, so I did not use it to explain why customers leave.
+
+-----------------------------------------------------
+SECTION 3: FOLLOW-UP QUESTIONS
+-----------------------------------------------------
+Question 1: Is Germany's higher churn just because of age or balance, or is it something else?
+
+AI answer (summary):
+- Not age: Germany's average age (39.8) is similar to France (38.5) and Spain (38.9).
+- Germany has the highest churn in every age group (for example, ages 41-50: Germany 48.8%, France 28.1%, Spain 27.3%).
+- Number of products and activity level are about the same across countries.
+- Germany has no zero-balance customers, while about 48% of French and Spanish customers do. This may be a real market difference or a feature of how the dataset was made.
+- The data cannot show WHY Germany is higher. This is worth investigating, not a proven cause.
+
+My SQL check (churn by age group and country): My SQL check (churn by age group and country): I ran the query in SSMS. The results matched the AI's numbers, and Germany had the highest churn in every age group. Match: YES
+
+What I learned: Germany's higher churn is not explained by customer age, because it stays higher in every age group. The data can't tell me why it's higher, so I would recommend investigating it further before drawing conclusions.
+
+ 
+
+Question 2: Why might customers with 3 or 4 products leave so often?
+
+AI answer (summary):
+- Customers with 3 or 4 products are a small group (326 of 10,000) and 85.9% of them left, compared with 7.6% for customers with 2 products.
+- They are older on average (43.7 years vs. 37.8 for 2-product customers) and slightly less often active members (44% vs. 53%).
+- Germany is highest within this group (91.7%, vs. 83.5% in France and 80.8% in Spain), which fits the earlier Germany finding.
+- In this group, every customer who complained left (280 of 280) and nobody who did not complain left (0 of 46). This is the same suspicious pattern as in the Complain check, so I did not use it as a reason.
+- Satisfaction Score barely differs between those who left (3.03) and those who stayed (3.28). Across all customers, churn is about 20% at every satisfaction level, so the score does not help explain churn in this dataset.
+- The data cannot show WHY these customers leave. Possible explanations (for example, being pushed to buy extra products, or fees) would need information that is not in this file. Because the group is small, this should be investigated, not treated as proven.
+
+My SQL check (churn by product group): I ran the query in SSMS and compared the results with the AI's numbers. matched
+What I learned: Customers with 3 or 4 products are rare but almost always leave, so a bank should look into why before encouraging customers to take extra products.
+
+
