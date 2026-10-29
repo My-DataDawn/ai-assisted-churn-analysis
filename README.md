@@ -40,7 +40,7 @@ One problem along the way: my first SQL query failed because the `Exited` column
 - Inactive members churn more than active ones (26.9% vs. 14.3%).
 
 ## Dashboard
-![Dashboard](screenshots/ai_churn_dashboard.png)
+![Dashboard](screenshots/ai_churn_dashboard.png?v=2)
 
 ## Recommendations
 1. **Investigate Germany first.** Its churn is about double France and Spain and is higher in every age group. The bank should look into local causes such as competitors, service, or pricing before taking action.
